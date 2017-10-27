@@ -50,7 +50,7 @@ namespace macro_commands {
 		}
 		return 1;
 	}
-	constexpr WORD char_to_vk(char const c) {
+	constexpr VK_CODE char_to_vk(char const c) {
 		if('a'<=c&&c<='z')
 		{
 			return c-0x20;//VK_A is 0x41
@@ -75,6 +75,7 @@ namespace macro_commands {
 			case '/': return VK_OEM_2;
 			case '\b': return VK_BACK;
 			case '\r': return VK_RETURN;
+			case ' ': return VK_SPACE;
 		}
 		return 0;
 	}
@@ -130,7 +131,8 @@ namespace macro_commands {
 			case '/':
 			case '\t':
 			case '\b':
-			case '\r': return true;
+			case '\r': 
+			case ' ': return true;
 		}
 		return false;
 	}
@@ -142,7 +144,7 @@ namespace macro_commands {
 	bool is_program_on(wchar_t* const name) {
 		return false;
 	}
-	int release_key(WORD const code) {
+	int release_key(VK_CODE const code) {
 		INPUT input;
 		rkc_init(code);
 		if(SendInput(1,&input,sizeof(INPUT)))
@@ -158,7 +160,7 @@ namespace macro_commands {
 		}
 		return 2;
 	}
-	int press_key(WORD const code) {
+	int press_key(VK_CODE const code) {
 		INPUT input;
 		pkc_init(code);
 		if(SendInput(1,&input,sizeof(INPUT)))
@@ -174,7 +176,7 @@ namespace macro_commands {
 		}
 		return 2;
 	}
-	int tap_key(WORD const code) {
+	int tap_key(VK_CODE const code) {
 		INPUT inputs[2];
 		tkc_init(code);
 		if(SendInput(2,inputs,sizeof(INPUT)))
@@ -191,7 +193,7 @@ namespace macro_commands {
 		return 2;
 	}
 
-	WORD shift_scancode=MapVirtualKey(VK_SHIFT,MAPVK_VK_TO_VSC);
+	VK_CODE shift_scancode=MapVirtualKey(VK_SHIFT,MAPVK_VK_TO_VSC);
 
 	std::vector<INPUT> string_to_inputs(std::string const& str) {
 		std::vector<INPUT> inputs;
@@ -200,7 +202,7 @@ namespace macro_commands {
 		{
 			if(is_key(str[i]))
 			{
-				WORD scancode=MapVirtualKey(char_to_vk(str[i]),MAPVK_VK_TO_VSC);
+				VK_CODE scancode=MapVirtualKey(char_to_vk(str[i]),MAPVK_VK_TO_VSC);
 				inputs.push_back({INPUT_KEYBOARD});
 				inputs.back().ki={0,scancode,KEYEVENTF_SCANCODE,0,0};
 				inputs.push_back({INPUT_KEYBOARD});
@@ -213,7 +215,7 @@ namespace macro_commands {
 				{
 					throw std::exception("Untypeable character");
 				}
-				WORD scancode=MapVirtualKey(char_to_vk(unshifted),MAPVK_VK_TO_VSC);
+				VK_CODE scancode=MapVirtualKey(char_to_vk(unshifted),MAPVK_VK_TO_VSC);
 				inputs.push_back({INPUT_KEYBOARD});
 				inputs.back().ki={0,shift_scancode,KEYEVENTF_SCANCODE,0,0};
 				inputs.push_back({INPUT_KEYBOARD});
@@ -239,9 +241,9 @@ namespace macro_commands {
 		}
 	}
 
-	WORD ctrl_scancode=MapVirtualKey(VK_CONTROL,MAPVK_VK_TO_VSC);
+	VK_CODE ctrl_scancode=MapVirtualKey(VK_CONTROL,MAPVK_VK_TO_VSC);
 
-	int ctrl_combo(WORD const code) {
+	int ctrl_combo(VK_CODE const code) {
 		INPUT inputs[4];
 		inputs[0].type=INPUT_KEYBOARD;
 		inputs[0].ki={0,ctrl_scancode,KEYEVENTF_SCANCODE,0,0};
@@ -266,7 +268,7 @@ namespace macro_commands {
 		return 2;
 	}
 
-	std::vector<INPUT> combo_to_inputs(std::vector<WORD> const& combo) {
+	std::vector<INPUT> combo_to_inputs(std::vector<VK_CODE> const& combo) {
 		std::vector<INPUT> inputs(combo.size()*2);
 		unsigned int ci,ii;
 		for(ci=0,ii=0;ii<combo.size();++ci,++ii)
@@ -282,7 +284,7 @@ namespace macro_commands {
 		return inputs;
 	}
 
-	int combo(std::vector<WORD> const& combo) {
+	int combo(std::vector<VK_CODE> const& combo) {
 		return inject_inputs(combo_to_inputs(combo));
 	}
 
@@ -521,11 +523,11 @@ namespace macro_commands {
 		inputs=string_to_inputs(str);
 	}
 
-	ComboCommand::ComboCommand(std::vector<WORD> const& codes) {
+	ComboCommand::ComboCommand(std::vector<VK_CODE> const& codes) {
 		inputs=combo_to_inputs(codes);
 	}
 
-	PressKeyCommand::PressKeyCommand(WORD code) {
+	PressKeyCommand::PressKeyCommand(VK_CODE code) {
 		pkc_init(code);
 	}
 
@@ -537,7 +539,7 @@ namespace macro_commands {
 		throw std::exception("Invalid char");
 	}
 
-	ReleaseKeyCommand::ReleaseKeyCommand(WORD code) {
+	ReleaseKeyCommand::ReleaseKeyCommand(VK_CODE code) {
 		rkc_init(code);
 	}
 	ReleaseKeyCommand::ReleaseKeyCommand(char key) {
@@ -548,7 +550,7 @@ namespace macro_commands {
 		throw std::exception("Invalid char");
 	}
 
-	TapKeyCommand::TapKeyCommand(WORD code) {
+	TapKeyCommand::TapKeyCommand(VK_CODE code) {
 		tkc_init(code);
 	}
 	TapKeyCommand::TapKeyCommand(char key) {
@@ -585,7 +587,7 @@ namespace macro_commands {
 		Sleep(time);
 		return 0;
 	}
-	void loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,WORD esc_code) {
+	void loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,VK_CODE esc_code) {
 		while(true)
 		{
 			for(unsigned int i=0;i<commands.size();++i)
@@ -600,6 +602,7 @@ namespace macro_commands {
 			}
 		}
 	}
+	
 #undef pkc_init
 #undef rkc_init
 #undef tkc_init

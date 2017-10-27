@@ -26,6 +26,7 @@ along with this program.If not,see <https://www.gnu.org/licenses/>.
 #include <string>
 #include <memory>
 #include <vector>
+#include <iostream>
 #define VK_A 0x41
 #define VK_B 0x42
 #define VK_C 0x43
@@ -67,11 +68,12 @@ along with this program.If not,see <https://www.gnu.org/licenses/>.
 #define ME_MOUSE2 1
 #define ME_MOUSE3 2
 namespace macro_commands {
+	typedef WORD VK_CODE;
 	/*
 		Converts a char to a virtual key code
 		If there is no code, 0 is returned
 	*/
-	constexpr WORD MACROS_API char_to_vk(char const c);
+	constexpr VK_CODE MACROS_API char_to_vk(char const c);
 	/*
 		Returns the "lowercase" version of any character
 	*/
@@ -83,7 +85,7 @@ namespace macro_commands {
 	/*
 		Turns a code combo (chord) into a vector of key inputs
 	*/
-	std::vector<INPUT> MACROS_API combo_to_inputs(std::vector<WORD> const&);
+	std::vector<INPUT> MACROS_API combo_to_inputs(std::vector<VK_CODE> const&);
 	/*
 		Injects a vector of inputs into the System
 	*/
@@ -106,7 +108,7 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API release_key(WORD const code);
+	int MACROS_API release_key(VK_CODE const code);
 	/*
 		Releases a given key by character
 		Returns 0 on success
@@ -119,7 +121,7 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API press_key(WORD const code);
+	int MACROS_API press_key(VK_CODE const code);
 	/*
 		Presses a given key by character
 		Returns 0 on success
@@ -132,7 +134,7 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API tap_key(WORD const code);
+	int MACROS_API tap_key(VK_CODE const code);
 	/*
 		Taps a given key by character
 		Returns 0 on success
@@ -152,7 +154,7 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API ctrl_combo(WORD const code);
+	int MACROS_API ctrl_combo(VK_CODE const code);
 	/*
 		Presses a key by key code while holding ctrl
 		Returns 0 on success
@@ -164,7 +166,7 @@ namespace macro_commands {
 		Taps the keys as a combo
 		e.g. {VK_CONTROL,VK_ALT,VK_C} => Ctrl+Alt+c
 	*/
-	int MACROS_API combo(std::vector<WORD> const& combo);
+	int MACROS_API combo(std::vector<VK_CODE> const& combo);
 	/*
 		Moves the mouse to absolute x y
 		(0,0) IS NOT A VALID COORDINATE
@@ -259,7 +261,7 @@ namespace macro_commands {
 		virtual ~Command()=default;
 		virtual int execute()=0;
 	};
-	class MACROS_API MultiCommand:public Command{
+	class MACROS_API MultiCommand:public Command {
 	protected:
 		std::vector<INPUT> inputs;
 		MultiCommand()=default;
@@ -291,24 +293,24 @@ namespace macro_commands {
 	};
 	class MACROS_API ComboCommand:public MultiCommand {
 	public:
-		ComboCommand(std::vector<WORD> const&);
+		ComboCommand(std::vector<VK_CODE> const&);
 		~ComboCommand()=default;
 	};
 	class MACROS_API PressKeyCommand:public SingleCommand {
 	public:
-		PressKeyCommand(WORD code);
+		PressKeyCommand(VK_CODE code);
 		PressKeyCommand(char key);
 		~PressKeyCommand()=default;
 	};
 	class MACROS_API ReleaseKeyCommand:public SingleCommand {
 	public:
-		ReleaseKeyCommand(WORD code);
+		ReleaseKeyCommand(VK_CODE code);
 		ReleaseKeyCommand(char key);
 		~ReleaseKeyCommand()=default;
 	};
 	class MACROS_API TapKeyCommand:public DoubleCommand {
 	public:
-		TapKeyCommand(WORD code);
+		TapKeyCommand(VK_CODE code);
 		TapKeyCommand(char key);
 		~TapKeyCommand()=default;
 	};
@@ -346,8 +348,17 @@ namespace macro_commands {
 		int execute();
 	};
 
-	void MACROS_API loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,WORD esc_code=VK_ESCAPE);
+	void MACROS_API loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,VK_CODE esc_code=VK_ESCAPE);
 
+	inline POINT cursor_pos() {
+		POINT pos;
+		GetCursorPos(&pos);
+		return pos;
+	}
+
+	std::ostream& operator<<(std::ostream& os,POINT p) {
+		return os<<'('<<p.x<<','<<p.y<<')';
+	}
 }
 
 #endif //_WINDOWS
