@@ -43,13 +43,7 @@ namespace macro_commands {
 		input.mi={x,y,0,MOUSEEVENTF_MOVE,0,0};
 	DWORD upmouse_codes[3]={MOUSEEVENTF_LEFTUP,MOUSEEVENTF_RIGHTUP,MOUSEEVENTF_MIDDLEUP};
 	DWORD downmouse_codes[3]={MOUSEEVENTF_LEFTDOWN,MOUSEEVENTF_RIGHTDOWN,MOUSEEVENTF_MIDDLEDOWN};
-	int inject_inputs(std::vector<INPUT>& inputs) {
-		if(SendInput(inputs.size(),inputs.data(),sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
-	}
+	
 	constexpr VK_CODE char_to_vk(char const c) {
 		if('a'<=c&&c<='z')
 		{
@@ -147,11 +141,7 @@ namespace macro_commands {
 	int release_key(VK_CODE const code) {
 		INPUT input;
 		rkc_init(code);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(1,&input,sizeof(INPUT));
 	}
 	int release_key(char const c) {
 		if(is_key(c))
@@ -163,11 +153,7 @@ namespace macro_commands {
 	int press_key(VK_CODE const code) {
 		INPUT input;
 		pkc_init(code);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(1,&input,sizeof(INPUT));
 	}
 	int press_key(char const c) {
 		if(is_key(c))
@@ -179,11 +165,7 @@ namespace macro_commands {
 	int tap_key(VK_CODE const code) {
 		INPUT inputs[2];
 		tkc_init(code);
-		if(SendInput(2,inputs,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(2,inputs,sizeof(INPUT));
 	}
 	int tap_key(char const c) {
 		if(is_key(c))
@@ -253,11 +235,7 @@ namespace macro_commands {
 		inputs[2].ki={0,inputs[1].ki.wScan,KEYEVENTF_SCANCODE|KEYEVENTF_KEYUP,0,0};
 		inputs[3].type=INPUT_KEYBOARD;
 		inputs[3].ki={0,ctrl_scancode,KEYEVENTF_SCANCODE|KEYEVENTF_KEYUP,0,0};
-		if(SendInput(4,inputs,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(4,inputs,sizeof(INPUT));
 	}
 
 	int ctrl_combo(char const c) {
@@ -298,50 +276,30 @@ namespace macro_commands {
 	dim screen_conv=get_screen_conv();
 	int move_mouse(ULONG const x,ULONG const y) {
 		INPUT input;
-		mmc_init(x,y);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		mmc_init(x+1,y+1);
+		return !SendInput(1,&input,sizeof(INPUT));
 	}
 
 	int translate_mouse(LONG const x,LONG const y) {
 		INPUT input;
 		trmc_init(x,y);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !(SendInput(1,&input,sizeof(INPUT)));
 	}
 
 	int tap_mouse_button(unsigned int const button) {
 		INPUT inputs[2];
 		tmc_init(button);
-		if(SendInput(2,inputs,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(2,inputs,sizeof(INPUT));
 	}
 	int press_mouse_button(unsigned int const button) {
 		INPUT input;
 		pmc_init(button);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !(SendInput(1,&input,sizeof(INPUT)));
 	}
 	int release_mouse_button(unsigned int const button) {
 		INPUT input;
 		rmc_init(button);
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(1,&input,sizeof(INPUT));
 	}
 
 	std::string get_clipboard_string() {
@@ -505,18 +463,10 @@ namespace macro_commands {
 	}
 
 	int DoubleCommand::execute() {
-		if(SendInput(2,inputs,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(2,inputs,sizeof(INPUT));
 	}
 	int SingleCommand::execute() {
-		if(SendInput(1,&input,sizeof(INPUT)))
-		{
-			return 0;
-		}
-		return 1;
+		return !SendInput(1,&input,sizeof(INPUT));
 	}
 
 	TypeCommand::TypeCommand(std::string const& str) {
@@ -587,7 +537,7 @@ namespace macro_commands {
 		Sleep(time);
 		return 0;
 	}
-	void loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,VK_CODE esc_code) {
+	void loop_until_key_pressed(CommandList const& commands,VK_CODE esc_code) {
 		while(true)
 		{
 			for(unsigned int i=0;i<commands.size();++i)

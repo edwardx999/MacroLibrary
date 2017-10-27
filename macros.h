@@ -27,6 +27,7 @@ along with this program.If not,see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #define VK_A 0x41
 #define VK_B 0x42
 #define VK_C 0x43
@@ -89,7 +90,7 @@ namespace macro_commands {
 	/*
 		Injects a vector of inputs into the System
 	*/
-	int MACROS_API inject_inputs(std::vector<INPUT>& inputs);
+	int inject_inputs(std::vector<INPUT>& inputs);
 	/*
 		Returns whether the character can be typed with one key press
 	*/
@@ -169,7 +170,6 @@ namespace macro_commands {
 	int MACROS_API combo(std::vector<VK_CODE> const& combo);
 	/*
 		Moves the mouse to absolute x y
-		(0,0) IS NOT A VALID COORDINATE
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
@@ -348,8 +348,19 @@ namespace macro_commands {
 		int execute();
 	};
 
-	void MACROS_API loop_until_key_pressed(std::vector<std::unique_ptr<Command>> const& commands,VK_CODE esc_code=VK_ESCAPE);
+	class CommandList:public std::vector<std::unique_ptr<Command>> {
+	public:
+		template<typename CMD,typename... Args>
+		inline void add_command(Args&&... args) {
+			push_back(make_unique<CMD>(args...));
+		}
+	};
+	void MACROS_API loop_until_key_pressed(CommandList const& commands,VK_CODE esc_code=VK_ESCAPE);
 
+	POINT cursor_pos();
+
+	std::ostream& operator<<(std::ostream& os,POINT p);
+	
 	inline POINT cursor_pos() {
 		POINT pos;
 		GetCursorPos(&pos);
@@ -358,6 +369,10 @@ namespace macro_commands {
 
 	std::ostream& operator<<(std::ostream& os,POINT p) {
 		return os<<'('<<p.x<<','<<p.y<<')';
+	}
+
+	inline int inject_inputs(std::vector<INPUT>& inputs) {
+		return !(SendInput(inputs.size(),inputs.data(),sizeof(INPUT)));
 	}
 }
 
