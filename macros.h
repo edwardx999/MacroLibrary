@@ -354,8 +354,8 @@ namespace macro_commands {
 		inline void add_command(Args&&... args) {
 			push_back(make_unique<CMD>(args...));
 		}
+		void MACROS_API loop_until_key_pressed(VK_CODE esc_code=VK_ESCAPE);
 	};
-	void MACROS_API loop_until_key_pressed(CommandList const& commands,VK_CODE esc_code=VK_ESCAPE);
 
 	POINT cursor_pos();
 

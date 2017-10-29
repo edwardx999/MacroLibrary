@@ -16,6 +16,7 @@ along with this program.If not,see <https://www.gnu.org/licenses/>.
 */
 #include "stdafx.h"
 #include "macros.h"
+#include <Psapi.h>
 namespace macro_commands {
 #define pkc_init(code) input.type=INPUT_KEYBOARD;input.ki={0,static_cast<WORD>(MapVirtualKey(code,MAPVK_VK_TO_VSC)),KEYEVENTF_SCANCODE,0,0};
 #define rkc_init(code) input.type=INPUT_KEYBOARD;input.ki={0,static_cast<WORD>(MapVirtualKey(code,MAPVK_VK_TO_VSC)),KEYEVENTF_SCANCODE|KEYEVENTF_KEYUP,0,0};
@@ -43,7 +44,7 @@ namespace macro_commands {
 		input.mi={x,y,0,MOUSEEVENTF_MOVE,0,0};
 	DWORD upmouse_codes[3]={MOUSEEVENTF_LEFTUP,MOUSEEVENTF_RIGHTUP,MOUSEEVENTF_MIDDLEUP};
 	DWORD downmouse_codes[3]={MOUSEEVENTF_LEFTDOWN,MOUSEEVENTF_RIGHTDOWN,MOUSEEVENTF_MIDDLEDOWN};
-	
+
 	constexpr VK_CODE char_to_vk(char const c) {
 		if('a'<=c&&c<='z')
 		{
@@ -125,7 +126,7 @@ namespace macro_commands {
 			case '/':
 			case '\t':
 			case '\b':
-			case '\r': 
+			case '\r':
 			case ' ': return true;
 		}
 		return false;
@@ -135,7 +136,41 @@ namespace macro_commands {
 		return FindWindow(name,NULL)!=NULL;
 	}
 
+#define ipo_buffer_size 500
+#define name_buffer_size MAX_PATH+1
 	bool is_program_on(wchar_t* const name) {
+		std::vector<DWORD> pi_buffer;
+		pi_buffer.resize(ipo_buffer_size);
+		DWORD num_proc;
+		while(true)
+		{
+			DWORD num_bytes=pi_buffer.size()*sizeof(DWORD);
+			EnumProcesses(pi_buffer.data(),num_bytes,&num_proc);
+			if(num_proc!=num_bytes)
+			{
+				break;
+			}
+			pi_buffer.resize(2*pi_buffer.size());
+		}
+		num_proc/=sizeof(DWORD);
+		for(unsigned int i=0;i<num_proc;++i)
+		{
+			HANDLE proc=OpenProcess(PROCESS_QUERY_INFORMATION,FALSE,pi_buffer[i]);
+			wchar_t name_buffer[name_buffer_size];
+			GetProcessImageFileName(proc,name_buffer,name_buffer_size);
+			unsigned int last_slash=wcslen(name_buffer);
+			while(last_slash-->0)
+			{
+				if(name_buffer[last_slash]=='\\') break;
+			}
+			++last_slash;
+			bool matches=!wcscmp(name_buffer+last_slash,name);
+			CloseHandle(proc);
+			if(matches)
+			{
+				return true;
+			}
+		}
 		return false;
 	}
 	int release_key(VK_CODE const code) {
@@ -531,16 +566,16 @@ namespace macro_commands {
 		trmc_init(x,y);
 	}
 
-	SleepCommand::SleepCommand(DWORD const time):time(time){}
+	SleepCommand::SleepCommand(DWORD const time):time(time) {}
 
 	int SleepCommand::execute() {
 		Sleep(time);
 		return 0;
 	}
-	void loop_until_key_pressed(CommandList const& commands,VK_CODE esc_code) {
+	void CommandList::loop_until_key_pressed(VK_CODE esc_code) {
 		while(true)
 		{
-			for(unsigned int i=0;i<commands.size();++i)
+			for(unsigned int i=0;i<this->size();++i)
 			{
 				do
 				{
@@ -548,11 +583,11 @@ namespace macro_commands {
 					{
 						return;
 					}
-				} while(commands[i]->execute());
+				} while((*this)[i]->execute());
 			}
 		}
 	}
-	
+
 #undef pkc_init
 #undef rkc_init
 #undef tkc_init
