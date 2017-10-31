@@ -70,6 +70,7 @@ along with this program.If not,see <https://www.gnu.org/licenses/>.
 #define ME_MOUSE3 2
 namespace macro_commands {
 	typedef WORD VK_CODE;
+	typedef std::vector<VK_CODE> Combo;
 	/*
 		Converts a char to a virtual key code
 		If there is no code, 0 is returned
@@ -86,7 +87,7 @@ namespace macro_commands {
 	/*
 		Turns a code combo (chord) into a vector of key inputs
 	*/
-	std::vector<INPUT> MACROS_API combo_to_inputs(std::vector<VK_CODE> const&);
+	std::vector<INPUT> MACROS_API combo_to_inputs(Combo const&);
 	/*
 		Injects a vector of inputs into the System
 	*/
@@ -167,7 +168,7 @@ namespace macro_commands {
 		Taps the keys as a combo
 		e.g. {VK_CONTROL,VK_ALT,VK_C} => Ctrl+Alt+c
 	*/
-	int MACROS_API combo(std::vector<VK_CODE> const& combo);
+	int MACROS_API combo(Combo const& combo);
 	/*
 		Moves the mouse to absolute x y
 		Returns 0 on success
@@ -293,7 +294,7 @@ namespace macro_commands {
 	};
 	class MACROS_API ComboCommand:public MultiCommand {
 	public:
-		ComboCommand(std::vector<VK_CODE> const&);
+		ComboCommand(Combo const&);
 		~ComboCommand()=default;
 	};
 	class MACROS_API PressKeyCommand:public SingleCommand {

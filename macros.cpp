@@ -281,7 +281,7 @@ namespace macro_commands {
 		return 2;
 	}
 
-	std::vector<INPUT> combo_to_inputs(std::vector<VK_CODE> const& combo) {
+	std::vector<INPUT> combo_to_inputs(Combo const& combo) {
 		std::vector<INPUT> inputs(combo.size()*2);
 		unsigned int ci,ii;
 		for(ci=0,ii=0;ii<combo.size();++ci,++ii)
@@ -297,7 +297,7 @@ namespace macro_commands {
 		return inputs;
 	}
 
-	int combo(std::vector<VK_CODE> const& combo) {
+	int combo(Combo const& combo) {
 		return inject_inputs(combo_to_inputs(combo));
 	}
 
@@ -508,7 +508,7 @@ namespace macro_commands {
 		inputs=string_to_inputs(str);
 	}
 
-	ComboCommand::ComboCommand(std::vector<VK_CODE> const& codes) {
+	ComboCommand::ComboCommand(Combo const& codes) {
 		inputs=combo_to_inputs(codes);
 	}
 
