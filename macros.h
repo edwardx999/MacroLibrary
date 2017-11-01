@@ -75,11 +75,11 @@ namespace macro_commands {
 		Converts a char to a virtual key code
 		If there is no code, 0 is returned
 	*/
-	constexpr VK_CODE MACROS_API char_to_vk(char const c);
+	constexpr VK_CODE MACROS_API char_to_vk(char const c) noexcept;
 	/*
 		Returns the "lowercase" version of any character
 	*/
-	constexpr char MACROS_API unshift(char const c);
+	constexpr char MACROS_API unshift(char const c) noexcept;
 	/*
 		Turns a string into a vector of key inputs
 	*/
@@ -95,14 +95,13 @@ namespace macro_commands {
 	/*
 		Returns whether the character can be typed with one key press
 	*/
-	constexpr bool MACROS_API is_key(char const c);
+	constexpr bool MACROS_API is_key(char const c) noexcept;
 	/*
 		Returns whether a window (e.g. L"IEFrame") is open
 	*/
-	bool MACROS_API is_window_open(wchar_t* const name);
+	bool MACROS_API is_window_open(wchar_t* const name) noexcept;
 	/*
 		Returns whether a program (e.g. L"iexplore.exe") is on
-		CURRENTLY NOT IMPLEMENTED, RETURNS FALSE
 	*/
 	bool MACROS_API is_program_on(wchar_t* const name);
 	/*
@@ -110,60 +109,60 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API release_key(VK_CODE const code);
+	int MACROS_API release_key(VK_CODE const code) noexcept;
 	/*
 		Releases a given key by character
 		Returns 0 on success
 		Returns 1 on failure to send iput
 		Returns 2 on non-existent key
 	*/
-	int MACROS_API release_key(char const c);
+	int MACROS_API release_key(char const c) noexcept;
 	/*
 		Presses a given key by key code
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API press_key(VK_CODE const code);
+	int MACROS_API press_key(VK_CODE const code) noexcept;
 	/*
 		Presses a given key by character
 		Returns 0 on success
 		Returns 1 on failure to send iput
 		Returns 2 on non-existent key
 	*/
-	int MACROS_API press_key(char const c);
+	int MACROS_API press_key(char const c) noexcept;
 	/*
 		Taps a given key by key code
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API tap_key(VK_CODE const code);
+	int MACROS_API tap_key(VK_CODE const code) noexcept;
 	/*
 		Taps a given key by character
 		Returns 0 on success
 		Returns 1 on failure to send iput
 		Returns 2 on non-existent key
 	*/
-	int MACROS_API tap_key(char const c);
+	int MACROS_API tap_key(char const c) noexcept;
 	/*
 		Types out a string
 		Returns 0 on success
 		Returns 1 on failure
 		Returns 2 on invalid character
 	*/
-	int MACROS_API type_string(std::string const& str);
+	int MACROS_API type_string(std::string const& str) noexcept;
 	/*
 		Presses a key by key code while holding ctrl
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API ctrl_combo(VK_CODE const code);
+	int MACROS_API ctrl_combo(VK_CODE const code) noexcept;
 	/*
 		Presses a key by key code while holding ctrl
 		Returns 0 on success
 		Returns 1 on failure to send input
 		Returns 2 on non-existent key
 	*/
-	int MACROS_API ctrl_combo(char const c);
+	int MACROS_API ctrl_combo(char const c) noexcept;
 	/*
 		Taps the keys as a combo
 		e.g. {VK_CONTROL,VK_ALT,VK_C} => Ctrl+Alt+c
@@ -174,31 +173,31 @@ namespace macro_commands {
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API move_mouse(ULONG const x,ULONG const y);
+	int MACROS_API move_mouse(ULONG const x,ULONG const y) noexcept;
 	/*
 		Moves the mouse a relative x y
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API translate_mouse(LONG const x,LONG const y);
+	int MACROS_API translate_mouse(LONG const x,LONG const y) noexcept;
 	/*
 		Taps a button on the mouse. Buttons are in ME_ definitions
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API tap_mouse_button(unsigned int const button);
+	int MACROS_API tap_mouse_button(unsigned int const button) noexcept;
 	/*
 		Presses down a button on the mouse. Buttons are in ME_ definitions
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API press_mouse_button(unsigned int const button);
+	int MACROS_API press_mouse_button(unsigned int const button) noexcept;
 	/*
 		Releases a button on the mouse. Buttons are in ME_ definitions
 		Returns 0 on success
 		Returns 1 on failure to send input
 	*/
-	int MACROS_API release_mouse_button(unsigned int const button);
+	int MACROS_API release_mouse_button(unsigned int const button) noexcept;
 	/*
 		Returns the clipboard data as a string
 		Throws exception on failure to access clipboard
@@ -211,7 +210,7 @@ namespace macro_commands {
 		Returns 2 on failure to open clipboard
 		Returns 3 on failure to clear clipboard
 	*/
-	int MACROS_API set_clipboard_string(std::string const& str);
+	int MACROS_API set_clipboard_string(std::string const& str) noexcept;
 
 	/*
 		Class used to run a program with parameters

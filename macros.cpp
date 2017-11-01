@@ -45,7 +45,7 @@ namespace macro_commands {
 	DWORD upmouse_codes[3]={MOUSEEVENTF_LEFTUP,MOUSEEVENTF_RIGHTUP,MOUSEEVENTF_MIDDLEUP};
 	DWORD downmouse_codes[3]={MOUSEEVENTF_LEFTDOWN,MOUSEEVENTF_RIGHTDOWN,MOUSEEVENTF_MIDDLEDOWN};
 
-	constexpr VK_CODE char_to_vk(char const c) {
+	constexpr VK_CODE char_to_vk(char const c) noexcept {
 		if('a'<=c&&c<='z')
 		{
 			return c-0x20;//VK_A is 0x41
@@ -75,7 +75,7 @@ namespace macro_commands {
 		return 0;
 	}
 
-	constexpr char unshift(char const c) {
+	constexpr char unshift(char const c) noexcept {
 		if('A'<=c&&c<='Z')
 		{
 			return c+0x20;
@@ -107,7 +107,7 @@ namespace macro_commands {
 		return c;
 	}
 
-	constexpr bool is_key(char const c) {
+	constexpr bool is_key(char const c) noexcept {
 		if(('a'<=c&&c<='z')||
 			('0'<=c&&c<='9'))
 		{
@@ -132,7 +132,7 @@ namespace macro_commands {
 		return false;
 	}
 
-	bool is_window_open(wchar_t* const name) {
+	bool is_window_open(wchar_t* const name) noexcept {
 		return FindWindow(name,NULL)!=NULL;
 	}
 
@@ -173,36 +173,36 @@ namespace macro_commands {
 		}
 		return false;
 	}
-	int release_key(VK_CODE const code) {
+	int release_key(VK_CODE const code)  noexcept {
 		INPUT input;
 		rkc_init(code);
 		return !SendInput(1,&input,sizeof(INPUT));
 	}
-	int release_key(char const c) {
+	int release_key(char const c) noexcept {
 		if(is_key(c))
 		{
 			return release_key(char_to_vk(c));
 		}
 		return 2;
 	}
-	int press_key(VK_CODE const code) {
+	int press_key(VK_CODE const code) noexcept {
 		INPUT input;
 		pkc_init(code);
 		return !SendInput(1,&input,sizeof(INPUT));
 	}
-	int press_key(char const c) {
+	int press_key(char const c) noexcept {
 		if(is_key(c))
 		{
 			return press_key(char_to_vk(c));
 		}
 		return 2;
 	}
-	int tap_key(VK_CODE const code) {
+	int tap_key(VK_CODE const code) noexcept {
 		INPUT inputs[2];
 		tkc_init(code);
 		return !SendInput(2,inputs,sizeof(INPUT));
 	}
-	int tap_key(char const c) {
+	int tap_key(char const c) noexcept {
 		if(is_key(c))
 		{
 			return tap_key(char_to_vk(c));
@@ -246,7 +246,7 @@ namespace macro_commands {
 		return inputs;
 	}
 
-	int type_string(std::string const& str) {
+	int type_string(std::string const& str) noexcept {
 		try
 		{
 			auto inputs=string_to_inputs(str);
@@ -260,7 +260,7 @@ namespace macro_commands {
 
 	VK_CODE ctrl_scancode=MapVirtualKey(VK_CONTROL,MAPVK_VK_TO_VSC);
 
-	int ctrl_combo(VK_CODE const code) {
+	int ctrl_combo(VK_CODE const code) noexcept {
 		INPUT inputs[4];
 		inputs[0].type=INPUT_KEYBOARD;
 		inputs[0].ki={0,ctrl_scancode,KEYEVENTF_SCANCODE,0,0};
@@ -273,7 +273,7 @@ namespace macro_commands {
 		return !SendInput(4,inputs,sizeof(INPUT));
 	}
 
-	int ctrl_combo(char const c) {
+	int ctrl_combo(char const c) noexcept {
 		if(is_key(c))
 		{
 			return ctrl_combo(char_to_vk(c));
@@ -304,34 +304,34 @@ namespace macro_commands {
 	struct dim {
 		float x,y;
 	};
-	dim get_screen_conv() {
+	dim get_screen_conv() noexcept {
 		SetProcessDPIAware();
 		return {65536.0f/GetSystemMetrics(SM_CXSCREEN),65536.0f/GetSystemMetrics(SM_CYSCREEN)};
 	}
-	dim screen_conv=get_screen_conv();
-	int move_mouse(ULONG const x,ULONG const y) {
+	dim const screen_conv=get_screen_conv();
+	int move_mouse(ULONG const x,ULONG const y) noexcept {
 		INPUT input;
 		mmc_init(x+1,y+1);
 		return !SendInput(1,&input,sizeof(INPUT));
 	}
 
-	int translate_mouse(LONG const x,LONG const y) {
+	int translate_mouse(LONG const x,LONG const y) noexcept {
 		INPUT input;
 		trmc_init(x,y);
 		return !(SendInput(1,&input,sizeof(INPUT)));
 	}
 
-	int tap_mouse_button(unsigned int const button) {
+	int tap_mouse_button(unsigned int const button) noexcept {
 		INPUT inputs[2];
 		tmc_init(button);
 		return !SendInput(2,inputs,sizeof(INPUT));
 	}
-	int press_mouse_button(unsigned int const button) {
+	int press_mouse_button(unsigned int const button) noexcept {
 		INPUT input;
 		pmc_init(button);
 		return !(SendInput(1,&input,sizeof(INPUT)));
 	}
-	int release_mouse_button(unsigned int const button) {
+	int release_mouse_button(unsigned int const button) noexcept {
 		INPUT input;
 		rmc_init(button);
 		return !SendInput(1,&input,sizeof(INPUT));
@@ -352,7 +352,7 @@ namespace macro_commands {
 		throw std::exception();
 	}
 
-	int set_clipboard_string(std::string const& str) {
+	int set_clipboard_string(std::string const& str) noexcept {
 		if(!OpenClipboard(GetActiveWindow()))
 		{
 			return 2;
