@@ -1,3 +1,5 @@
+THIS HAS BEEN MOVED TO EXLIB at https://github.com/edwardx999/ExLib
+
 A MacroLibary for Windows
 
 Copyright (C) 2017 Edward Xie
